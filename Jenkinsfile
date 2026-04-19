@@ -2,31 +2,48 @@ pipeline {
     agent any
 
     tools {
-        maven "Maven"
-        jdk "JDK21"
+        maven 'Maven'      // Make sure Maven is configured in Jenkins
+        jdk 'JDK'          // Make sure JDK is configured
     }
 
     stages {
 
+        stage('Checkout SCM') {
+            steps {
+                git 'https://github.com/Tusha06/Jenkin.git'
+            }
+        }
+
         stage('Initialize') {
             steps {
-                sh 'echo "JAVA_HOME = $JAVA_HOME"'
-                sh 'echo "M2_HOME = $M2_HOME"'
-                sh 'echo "PATH = $PATH"'
+                bat 'echo Initializing project...'
+                bat 'java -version'
+                bat 'mvn -version'
             }
         }
 
         stage('Build') {
             steps {
-                sh 'mvn -B clean package'
+                bat 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                bat 'mvn test'
             }
         }
     }
 
     post {
         always {
-            junit allowEmptyResults: true,
-                  testResults: '**/surefire-reports/*.xml'
+            junit '**/target/surefire-reports/*.xml'
+        }
+        success {
+            echo 'Build Successful ✅'
+        }
+        failure {
+            echo 'Build Failed ❌'
         }
     }
 }
